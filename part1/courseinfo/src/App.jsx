@@ -10,16 +10,8 @@ const Header = (props) => {
   )
 }
 
-const Part = (props) => {
-  console.log("Part", props)
+const Part = (props) => <p>{props.part.name} {props.part.exercises}</p>
 
-  return (
-  <>
-  <p>{props.part.name} {props.part.exercises}</p>
-  </>
-
-  )
-}
 
 const Content = (props) => {
   console.log("Content", props)
