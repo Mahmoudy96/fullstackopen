@@ -12,7 +12,6 @@ const Part = ({ part }) =>
   </p>
 
 const Content = ({ parts }) => {
-  console.log(parts)
   return(<>
     {parts.map(part => <Part key={part.id} part={part}></Part>)}
   </>)
