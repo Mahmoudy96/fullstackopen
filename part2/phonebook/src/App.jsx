@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Display from './components/Display'
 import Filter from './components/Filter'
 import AddPerson from './components/AddPerson'
+import axios from 'axios'
 
 
 const App = () => {
@@ -12,6 +13,16 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
   const [peopleToShow, setPeopleToShow] = useState([])
+  
+  useEffect(() => {axios
+    .get('http://localhost:3001/persons')
+    .then(response => {
+      setPersons(response.data)
+      setPeopleToShow(response.data)
+    })
+  },[])
+  
+  
   const filterPeople = (persons, name) => {
     const filtered_people = persons.filter(person => person.name.toLowerCase().includes(name.toLowerCase()))
     return(structuredClone(filtered_people))
