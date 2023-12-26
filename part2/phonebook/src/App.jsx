@@ -36,9 +36,20 @@ const App = () => {
       number: newNumber,
       // id: persons.length+1
     }
-    const alreadyIn = persons.map(person => person.name).indexOf(newName)
-    if(alreadyIn != -1){
-      alert(`${newName} is already in the phonebook`)
+    const personIndex = persons.map(person => person.name).indexOf(newName)
+    if(personIndex != -1){
+      if(persons[personIndex].number == newNumber) {
+        alert(`${newName} is already in the phonebook with this number`)
+      } else {
+        phonebookService
+        .update(persons[personIndex].id, newPerson)
+        .then(returnedPerson => {
+          const newPeople = persons.map( person => person.id == returnedPerson.id ? returnedPerson : person)
+          setPersons(newPeople)
+          setPeopleToShow(filterPeople(newPeople,newSearch))
+        }
+      )
+      }
     } else if(newName=='') {
       alert('Name cannot be empty')
     }
