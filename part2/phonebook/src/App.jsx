@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import Display from './components/Display'
 import Filter from './components/Filter'
 import AddPerson from './components/AddPerson'
+import Notification from './components/Notification'
 import phonebookService from './services/phonebook'
 import axios from 'axios'
-
+import './index.css'
 
 const App = () => {
   // const initialPeople = [{ name: 'Arto Hellas',number: "19-82-34772",id: 1 },
@@ -14,7 +15,8 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
   const [peopleToShow, setPeopleToShow] = useState([])
-  
+  const [message, setMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)  
   const hook = () => {
     phonebookService
       .getAll()
@@ -41,14 +43,24 @@ const App = () => {
       if(persons[personIndex].number == newNumber) {
         alert(`${newName} is already in the phonebook with this number`)
       } else {
+        const id = persons[personIndex].id
         phonebookService
-        .update(persons[personIndex].id, newPerson)
+        .update(id, newPerson)
         .then(returnedPerson => {
           const newPeople = persons.map( person => person.id == returnedPerson.id ? returnedPerson : person)
           setPersons(newPeople)
           setPeopleToShow(filterPeople(newPeople,newSearch))
-        }
-      )
+        })
+        .catch(error=>{
+          setErrorMessage(`'${newName}' has already been deleted from the phonebook`)
+          setTimeout(() => {
+            setErrorMessage(null)}, 5000)
+          const newPeople = persons.filter( p => p.id !== id)
+          setPersons(newPeople)
+          setPeopleToShow(filterPeople(newPeople,newSearch))
+        })
+
+
       }
     } else if(newName=='') {
       alert('Name cannot be empty')
@@ -60,6 +72,9 @@ const App = () => {
           const newPeople = persons.concat(returnedPerson)
           setPersons(newPeople)
           setPeopleToShow(filterPeople(newPeople,newSearch))
+          setMessage(`added '${returnedPerson.name}' to phonebook`)
+          setTimeout(() => {
+            setMessage(null)}, 5000)
         }
       )
     }
@@ -94,6 +109,8 @@ const App = () => {
       <h1>Phonebook</h1>
       <Filter value={newSearch} onChange={handleNameFiltering}></Filter>
       <h2>Add person to phonebook</h2>
+      <Notification message={errorMessage} style="error"></Notification>
+      <Notification message={message} style="message"></Notification>
       <AddPerson addPerson={addPerson} newName={newName} handleNameChange={handleNameChange}
         newNumber={newNumber} handleNumberChange={handleNumberChange}></AddPerson>
       <h2>Numbers</h2>
