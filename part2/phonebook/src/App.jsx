@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Display from './components/Display'
 import Filter from './components/Filter'
 import AddPerson from './components/AddPerson'
+import phonebookService from './services/phonebook'
 import axios from 'axios'
 
 
@@ -14,14 +15,15 @@ const App = () => {
   const [newSearch, setNewSearch] = useState('')
   const [peopleToShow, setPeopleToShow] = useState([])
   
-  useEffect(() => {axios
-    .get('http://localhost:3001/persons')
-    .then(response => {
-      setPersons(response.data)
-      setPeopleToShow(response.data)
-    })
-  },[])
-  
+  const hook = () => {
+    phonebookService
+      .getAll()
+      .then(initialPeople => {
+        setPersons(initialPeople)
+        setPeopleToShow(initialPeople)
+      })
+  }
+  useEffect(hook,[])
   
   const filterPeople = (persons, name) => {
     const filtered_people = persons.filter(person => person.name.toLowerCase().includes(name.toLowerCase()))
@@ -32,7 +34,7 @@ const App = () => {
     const newPerson = {
       name: newName,
       number: newNumber,
-      id: persons.length+1
+      // id: persons.length+1
     }
     const alreadyIn = persons.map(person => person.name).indexOf(newName)
     if(alreadyIn != -1){
@@ -41,12 +43,22 @@ const App = () => {
       alert('Name cannot be empty')
     }
      else {
-      const newPeople = persons.concat(newPerson)
-      setPersons(newPeople)
-      setPeopleToShow(filterPeople(newPeople,newSearch))
-
+      phonebookService
+        .create(newPerson)
+        .then(returnedPerson => {
+          const newPeople = persons.concat(returnedPerson)
+          setPersons(newPeople)
+          setPeopleToShow(filterPeople(newPeople,newSearch))
+        }
+      )
     }
-    // console.log('new people:',peopleToShow)
+  }
+  const deletePerson = (person) => {
+    if (confirm(`Delete ${person.name}?`)) {
+      phonebookService
+      .remove(person.id)
+      .then(hook) 
+    }
   }
   const handleNameChange = (event) => {
     // console.log('hi', event.target.value)
@@ -68,13 +80,13 @@ const App = () => {
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h1>Phonebook</h1>
       <Filter value={newSearch} onChange={handleNameFiltering}></Filter>
-      <h1>Add person to phonebook</h1>
+      <h2>Add person to phonebook</h2>
       <AddPerson addPerson={addPerson} newName={newName} handleNameChange={handleNameChange}
         newNumber={newNumber} handleNumberChange={handleNumberChange}></AddPerson>
       <h2>Numbers</h2>
-      <Display people = {peopleToShow}></Display>
+      <Display people = {peopleToShow} deletePerson = {deletePerson}/>
     </div>
   )
 }
